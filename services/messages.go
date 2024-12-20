@@ -22,51 +22,52 @@ type serviceMessage struct {
 	fakeMessageId string
 }
 
-func initWaCli() *whatsmeow.Client {
+func initWaCli() (c *whatsmeow.Client, error error) {
 	dbLog := waLog.Stdout("Database", "DEBUG", true)
 	container, err := sqlstore.New("sqlite3", "file:examplestore.db?_foreign_keys=on", dbLog)
 	if err != nil {
-		panic(err)
+		return nil, err
 	}
 
-	// If you want multiple sessions, remember their JIDs and use .GetDevice(jid) or .GetAllDevices() instead.
 	deviceStore, err := container.GetFirstDevice()
 	if err != nil {
-		panic(err)
+		return nil, err
 	}
 	clientLog := waLog.Stdout("Client", "DEBUG", true)
 	client := whatsmeow.NewClient(deviceStore, clientLog)
 
 	if client.Store.ID == nil {
-		// No ID stored, new login
 		qrChan, _ := client.GetQRChannel(context.Background())
 		err = client.Connect()
 		if err != nil {
-			panic(err)
+			return nil, err
 		}
 		for evt := range qrChan {
 			if evt.Event == "code" {
-				// Render the QR code here
 				qrterminal.GenerateHalfBlock(evt.Code, qrterminal.L, os.Stdout)
 			} else {
 				fmt.Println("Login event:", evt.Event)
 			}
 		}
 	} else {
-		// Already logged in, just connect
 		err = client.Connect()
 		if err != nil {
-			panic(err)
+			return nil, err
 		}
 	}
-	return client
+	return client, nil
 }
 
-func NewSendService() serviceMessage {
-	return serviceMessage{
-		waCli:         initWaCli(),
-		fakeMessageId: "3EB01FF2E76C149A921B7C",
+func NewSendService() (service serviceMessage, error error) {
+	client, err := initWaCli()
+	if err != nil {
+		return serviceMessage{}, err
 	}
+
+	return serviceMessage{
+		waCli:         client,
+		fakeMessageId: "3EB01FF2E76C149A921B7C",
+	}, nil
 }
 
 func (service serviceMessage) findGroupByName(groupName string) (groupInfo types.GroupInfo, err error) {
