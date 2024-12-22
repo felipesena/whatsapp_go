@@ -92,6 +92,9 @@ func (service serviceMessage) findGroupByName(groupName string) (groupInfo types
 	return foundedGroup, nil
 }
 
+// SendMessageToGroup send a message to a group with the provided group name replying a participant with the number provided in participantToReply
+// It will reply a message adding the text provided in `messageToReply` with the text provided in `messageText`
+// It return the send response and any error encountered
 func (service serviceMessage) SendMessageToGroup(groupName string, participantToReply string, messageToReply string, messageText string) (response whatsmeow.SendResponse, err error) {
 	groupInfo, err := service.findGroupByName(groupName)
 	if err != nil {
@@ -115,6 +118,9 @@ func (service serviceMessage) SendMessageToGroup(groupName string, participantTo
 	return service.sendMessage(groupInfo.JID, message)
 }
 
+// SendMessageToPerson send a private message to a person with the provided number
+// It will reply a message adding the text provided in messageToReply with the text provided in messageText
+// It return the send response and any error encountered
 func (service serviceMessage) SendMessageToPerson(participantToReply string, messageToReply string, messageText string) (response whatsmeow.SendResponse, err error) {
 	targetJID := types.NewJID(participantToReply, types.DefaultUserServer)
 

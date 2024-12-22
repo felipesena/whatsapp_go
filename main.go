@@ -1,72 +1,39 @@
 package main
 
 import (
-	"flag"
 	"fmt"
 
+	"github.com/alecthomas/kingpin/v2"
 	"github.com/felipesena/whatsapp_go/services"
 )
 
 var (
-	telephoneToVar  string
-	replyMessageVar string
-	textVar         string
-	groupNameVar    string
+	telephoneToVar  = kingpin.Flag("telephone", "phone number from the person to reply to").Required().Short('t').String()
+	replyMessageVar = kingpin.Flag("reply", "reply message").Required().Short('r').String()
+	textVar         = kingpin.Flag("message", "text message").Required().Short('m').String()
+	groupNameVar    = kingpin.Flag("group", "(optional) group name if you want to reply a message in a group").Short('g').String()
 )
 
-func init() {
-	flag.StringVar(&telephoneToVar, "telephone", "", "phone number")
-	flag.StringVar(&replyMessageVar, "reply", "", "reply message")
-	flag.StringVar(&textVar, "text", "", "text")
-	flag.StringVar(&groupNameVar, "group", "", "group name")
-
-	flag.Parse()
-
-	if telephoneToVar == "" {
-		fmt.Println("Telephone should be informed")
-		return
-	}
-
-	if replyMessageVar == "" {
-		fmt.Println("Reply message should be informed")
-		return
-	}
-
-	if textVar == "" {
-		fmt.Println("Text message should be informed")
-		return
-	}
-}
-
 func main() {
-	fmt.Println(telephoneToVar)
-	fmt.Println(replyMessageVar)
-	fmt.Println(textVar)
-	fmt.Println(groupNameVar)
+	kingpin.Parse()
 
 	serviceMessage, err := services.NewSendService()
-	if err != nil {
-		fmt.Println("Error connecting to WhatsApp client", err)
-		return
-	}
+	kingpin.FatalIfError(err, "Error connecting to WhatsApp client")
 
-	if groupNameVar == "" {
-		//SEND MESSAGE TO PERSON
-		_, err := serviceMessage.SendMessageToPerson(telephoneToVar, replyMessageVar, textVar)
-		if err != nil {
-			errorMessage := fmt.Sprintf("Error sending message to %s", telephoneToVar)
-			fmt.Println(errorMessage, err)
-			return
-		}
+	if *groupNameVar == "" {
+		// SEND MESSAGE TO PERSON
+		fmt.Println("Sending message to person")
+		_, err := serviceMessage.SendMessageToPerson(*telephoneToVar, *replyMessageVar, *textVar)
 
+		errorMessage := fmt.Sprintf("Error sending message to %s", *telephoneToVar)
+		kingpin.FatalIfError(err, errorMessage)
 	} else {
-		//SEND MESSAGE TO GROUP
-		_, err := serviceMessage.SendMessageToGroup(groupNameVar, telephoneToVar, replyMessageVar, textVar)
-		if err != nil {
-			errorMessage := fmt.Sprintf("Error sending message in group %s to %s", groupNameVar, telephoneToVar)
-			fmt.Println(errorMessage, err)
-			return
-		}
+		// SEND MESSAGE TO GROUP
+		fmt.Println("Sending message to group", *groupNameVar)
+		_, err := serviceMessage.SendMessageToGroup(*groupNameVar, *telephoneToVar, *replyMessageVar, *textVar)
+
+		errorMessage := fmt.Sprintf("Error sending message in group %s to %s", *groupNameVar, *telephoneToVar)
+		kingpin.FatalIfError(err, errorMessage)
 	}
 
 	serviceMessage.Disconnect()
