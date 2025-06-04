@@ -70,7 +70,7 @@ func NewSendService() (service serviceMessage, error error) {
 	}, nil
 }
 
-func (service serviceMessage) findGroupByName(groupName string) (groupInfo types.GroupInfo, err error) {
+func (service serviceMessage) FindGroupByName(groupName string) (groupInfo types.GroupInfo, err error) {
 
 	joinedGroups, err := service.waCli.GetJoinedGroups()
 	if err != nil {
@@ -96,7 +96,7 @@ func (service serviceMessage) findGroupByName(groupName string) (groupInfo types
 // It will reply a message adding the text provided in `messageToReply` with the text provided in `messageText`
 // It return the send response and any error encountered
 func (service serviceMessage) SendMessageToGroup(groupName string, participantToReply string, messageToReply string, messageText string) (response whatsmeow.SendResponse, err error) {
-	groupInfo, err := service.findGroupByName(groupName)
+	groupInfo, err := service.FindGroupByName(groupName)
 	if err != nil {
 		return whatsmeow.SendResponse{}, err
 	}

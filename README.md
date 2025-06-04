@@ -11,10 +11,10 @@ The phone number must have country code but without `+`
 
 ### Reply to a message to someone
 ```
-go run main.go -t 553170707070 -r "Message that i`ll reply from someone else" -t "Text from my message" 
+go run main.go -t 553170707070 -r "Message that i`ll reply from someone else" -m "Text from my message" 
 ```
 
 ### Reply to message in a group
 ```
-go run main.go -t 553170707070 -r "Message that i`ll reply from someone else" -t "Text from my message" -g "Group name"
+go run main.go -t 553170707070 -r "Message that i`ll reply from someone else" -m "Text from my message" -g "Group name"
 ```
